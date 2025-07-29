@@ -1,5 +1,6 @@
 import { Telegraf } from 'telegraf';
 import dotenv from 'dotenv';
+import express from 'express';
 import { startCommand } from './bot/commands/start';
 import { storeDetailsAction } from './bot/actions/storeDetails';
 import { viewProductsAction } from './bot/actions/viewProducts';
@@ -38,10 +39,15 @@ if (process.env.NODE_ENV === 'production') {
   if (!WEBHOOK_URL) {
     throw new Error('WEBHOOK_URL is required for production');
   }
-  
+
+  const app = express();
+  app.use(bot.webhookCallback('/webhook'));
   bot.telegram.setWebhook(`${WEBHOOK_URL}/webhook`);
-  bot.startWebhook('/webhook', null, Number(PORT));
-  console.log(`Bot started with webhook on port ${PORT}`);
+
+  app.listen(PORT, () => {
+    console.log(`Bot listening on port ${PORT}`);
+  });
+
 } else {
   // Use long polling in development
   bot.launch();
@@ -51,3 +57,4 @@ if (process.env.NODE_ENV === 'production') {
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
