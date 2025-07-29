@@ -9,17 +9,24 @@
     "start": "node dist/index.js",
     "watch": "ts-node --watch src/index.ts"
   },
-  "keywords": ["telegram", "bot", "mall", "shopping"],
+  "keywords": [
+    "telegram",
+    "bot",
+    "mall",
+    "shopping"
+  ],
   "author": "Mall Management Team",
   "license": "MIT",
   "dependencies": {
-    "telegraf": "^4.15.6",
     "@supabase/supabase-js": "^2.38.4",
-    "dotenv": "^16.3.1"
+    "@types/express": "^5.0.3",
+    "dotenv": "^16.3.1",
+    "express": "^5.1.0",
+    "telegraf": "^4.15.6"
   },
   "devDependencies": {
     "@types/node": "^20.10.0",
-    "typescript": "^5.3.0",
-    "ts-node": "^10.9.0"
+    "ts-node": "^10.9.0",
+    "typescript": "^5.3.0"
   }
 }
