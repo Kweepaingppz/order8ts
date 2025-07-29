@@ -1,17 +1,25 @@
 import { Context, Markup } from 'telegraf';
 import { supabase, formatCurrency, escapeMarkdown } from '../../lib/supabaseClient';
 
-export async function viewProductsAction(ctx: Context) {
+export async function viewProductsAction(ctx: Context): Promise<void> {
   try {
     // Extract store ID from callback data
-    const callbackData = ctx.callbackQuery?.data;
+    const callbackQuery = ctx.callbackQuery;
+    if (!callbackQuery || !('data' in callbackQuery)) {
+      await ctx.reply('Invalid store selection.');
+      return;
+    }
+
+    const callbackData = callbackQuery.data;
     if (!callbackData) {
-      return ctx.reply('Invalid store selection.');
+      await ctx.reply('Invalid store selection.');
+      return;
     }
 
     const storeId = callbackData.split('_')[2]; // view_products_${storeId}
     if (!storeId) {
-      return ctx.reply('Invalid store selection.');
+      await ctx.reply('Invalid store selection.');
+      return;
     }
 
     // Fetch store info
@@ -23,7 +31,8 @@ export async function viewProductsAction(ctx: Context) {
 
     if (storeError || !store) {
       await ctx.answerCbQuery('Store not found');
-      return ctx.reply('Sorry, I could not find this store.');
+      await ctx.reply('Sorry, I could not find this store.');
+      return;
     }
 
     // Fetch products for this store
@@ -38,12 +47,13 @@ export async function viewProductsAction(ctx: Context) {
     if (productsError) {
       console.error('Error fetching products:', productsError);
       await ctx.answerCbQuery('Error loading products');
-      return ctx.reply('Sorry, I could not load products for this store.');
+      await ctx.reply('Sorry, I could not load products for this store.');
+      return;
     }
 
     if (!products || products.length === 0) {
       await ctx.answerCbQuery();
-      return ctx.editMessageText(
+      await ctx.editMessageText(
         `🏪 *${escapeMarkdown(store.name)}*\n\n❌ No products available at the moment.`,
         {
           parse_mode: 'Markdown',
@@ -52,6 +62,7 @@ export async function viewProductsAction(ctx: Context) {
           ]).reply_markup
         }
       );
+      return;
     }
 
     // Format products message
@@ -91,6 +102,7 @@ export async function viewProductsAction(ctx: Context) {
   } catch (error) {
     console.error('Error in view products action:', error);
     await ctx.answerCbQuery('Error loading products');
-    ctx.reply('Sorry, something went wrong while loading products.');
+    await ctx.reply('Sorry, something went wrong while loading products.');
   }
 }
+
