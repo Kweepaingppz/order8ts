@@ -42,7 +42,19 @@ if (process.env.NODE_ENV === 'production') {
 
   const app = express();
   app.use(bot.webhookCallback('/webhook'));
-  bot.telegram.setWebhook(`${WEBHOOK_URL}/webhook`);
+  
+  // Delete any existing webhook before setting a new one
+  bot.telegram.deleteWebhook()
+    .then(() => {
+      console.log('Previous webhook deleted successfully');
+      return bot.telegram.setWebhook(`${WEBHOOK_URL}/webhook`);
+    })
+    .then(() => {
+      console.log('Webhook set successfully');
+    })
+    .catch((error) => {
+      console.error('Error setting webhook:', error);
+    });
 
   app.listen(PORT, () => {
     console.log(`Bot listening on port ${PORT}`);
