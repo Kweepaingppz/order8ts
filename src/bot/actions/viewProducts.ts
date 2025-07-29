@@ -65,11 +65,11 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
       return;
     }
 
-    // Format products message
-    let message = `🏪 *${escapeMarkdown(store.name)} - Products*\n\n`;
+    // Format products message using regular Markdown instead of MarkdownV2
+    let message = `🏪 *${escapeMarkdown(store.name)} Products*\n\n`;
     
     products.slice(0, 10).forEach((product, index) => { // Limit to first 10 products
-      message += `${index + 1}\\. *${escapeMarkdown(product.name)}*\n`;
+      message += `${index + 1}. *${escapeMarkdown(product.name)}*\n`;
       if (product.description) {
         message += `   ${escapeMarkdown(product.description.substring(0, 100))}${product.description.length > 100 ? '...' : ''}\n`;
       }
@@ -78,7 +78,7 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
     });
 
     if (products.length > 10) {
-      message += `_\\.\\.\\. and ${products.length - 10} more products_\n\n`;
+      message += `_... and ${products.length - 10} more products_\n\n`;
     }
 
     // Create action buttons
@@ -87,11 +87,11 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
       [Markup.button.callback('🔙 Back to Store Details', `store_${storeId}`)]
     ];
 
-    // Edit the message with products list
+    // Edit the message with products list using regular Markdown
     await ctx.editMessageText(
       message,
       {
-        parse_mode: 'MarkdownV2',
+        parse_mode: 'Markdown',
         reply_markup: Markup.inlineKeyboard(buttons).reply_markup
       }
     );
