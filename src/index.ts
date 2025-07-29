@@ -30,41 +30,38 @@ bot.catch((err, ctx) => {
   ctx.reply('Sorry, something went wrong. Please try again.');
 });
 
-// Launch bot
-if (process.env.NODE_ENV === 'production') {
-  // Use webhooks in production
-  const PORT = process.env.PORT || 3000;
-  const WEBHOOK_URL = process.env.WEBHOOK_URL;
-  
-  if (!WEBHOOK_URL) {
-    throw new Error('WEBHOOK_URL is required for production');
+// Launch bot with long polling (works for both development and production)
+async function startBot() {
+  try {
+    // Delete any existing webhook before starting long polling
+    await bot.telegram.deleteWebhook();
+    console.log('Previous webhook deleted successfully');
+    
+    // Start the bot with long polling
+    await bot.launch();
+    console.log('Bot started with long polling');
+    
+    // Keep the service alive by starting an Express server
+    if (process.env.NODE_ENV === 'production') {
+      const PORT = process.env.PORT || 3000;
+      const app = express();
+      
+      // Simple health check endpoint
+      app.get('/', (req, res) => {
+        res.send('Bot is running with long polling');
+      });
+      
+      app.listen(PORT, () => {
+        console.log(`Health check server listening on port ${PORT}`);
+      });
+    }
+    
+  } catch (error) {
+    console.error('Error starting bot:', error);
   }
-
-  const app = express();
-  app.use(bot.webhookCallback('/webhook'));
-  
-  // Delete any existing webhook before setting a new one
-  bot.telegram.deleteWebhook()
-    .then(() => {
-      console.log('Previous webhook deleted successfully');
-      return bot.telegram.setWebhook(`${WEBHOOK_URL}/webhook`);
-    })
-    .then(() => {
-      console.log('Webhook set successfully');
-    })
-    .catch((error) => {
-      console.error('Error setting webhook:', error);
-    });
-
-  app.listen(PORT, () => {
-    console.log(`Bot listening on port ${PORT}`);
-  });
-
-} else {
-  // Use long polling in development
-  bot.launch();
-  console.log('Bot started with long polling');
 }
+
+startBot();
 
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
