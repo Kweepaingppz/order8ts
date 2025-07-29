@@ -1,7 +1,7 @@
 import { Context, Markup } from 'telegraf';
 import { supabase } from '../../lib/supabaseClient';
 
-export async function startCommand(ctx: Context) {
+export async function startCommand(ctx: Context): Promise<void> {
   try {
     // Fetch active and approved stores
     const { data: stores, error } = await supabase
@@ -9,16 +9,18 @@ export async function startCommand(ctx: Context) {
       .select('id, name, description')
       .eq('is_active', true)
       .eq('approval_status', 'approved')
-      .order('display_order', { ascending: true, nullsLast: true })
+      .order('display_order', { ascending: true, nullsFirst: false })
       .order('name');
 
     if (error) {
       console.error('Error fetching stores:', error);
-      return ctx.reply('Sorry, I could not fetch stores at the moment. Please try again later.');
+      await ctx.reply('Sorry, I could not fetch stores at the moment. Please try again later.');
+      return;
     }
 
     if (!stores || stores.length === 0) {
-      return ctx.reply('No active stores found at the moment. Please check back later!');
+      await ctx.reply('No active stores found at the moment. Please check back later!');
+      return;
     }
 
     // Create inline keyboard with store names
@@ -39,6 +41,7 @@ export async function startCommand(ctx: Context) {
 
   } catch (error) {
     console.error('Error in start command:', error);
-    ctx.reply('Sorry, something went wrong. Please try again.');
+    await ctx.reply('Sorry, something went wrong. Please try again.');
   }
 }
+
