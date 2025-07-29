@@ -19,6 +19,14 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
       return;
     }
 
+    // Check if ctx.from exists
+    if (!ctx.from) {
+      await ctx.answerCbQuery('User information not available.');
+      await ctx.reply('User information not available.');
+      return;
+    }
+
+    const userId = ctx.from.id.toString();
     let storeId: string;
     let productIndex: number;
 
@@ -63,12 +71,12 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
         return;
       }
 
-      userProductIndex.set(ctx.from.id.toString(), { storeId, products, currentIndex: productIndex });
+      userProductIndex.set(userId, { storeId, products, currentIndex: productIndex });
 
     } else if (callbackData.startsWith('navigate_product_')) {
       const parts = callbackData.split('_');
       const direction = parts[2]; // 'next' or 'prev'
-      const userData = userProductIndex.get(ctx.from.id.toString());
+      const userData = userProductIndex.get(userId);
 
       if (!userData) {
         await ctx.answerCbQuery('Please start from the store selection.');
@@ -86,11 +94,11 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
       }
       productIndex = newIndex;
       userData.currentIndex = newIndex;
-      userProductIndex.set(ctx.from.id.toString(), userData);
+      userProductIndex.set(userId, userData);
 
     } else if (callbackData.startsWith('add_to_cart_')) {
       const productId = callbackData.split('_')[3];
-      const userData = userProductIndex.get(ctx.from.id.toString());
+      const userData = userProductIndex.get(userId);
 
       if (!userData) {
         await ctx.answerCbQuery('Please select a product first.');
@@ -98,7 +106,7 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
         return;
       }
 
-      const result = await addToCart(ctx.from.id.toString(), productId, 1);
+      const result = await addToCart(userId, productId, 1);
       await ctx.answerCbQuery(result.message);
       return;
     } else {
@@ -106,7 +114,7 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
       return;
     }
 
-    const userData = userProductIndex.get(ctx.from.id.toString());
+    const userData = userProductIndex.get(userId);
     if (!userData || userData.products.length === 0) {
       await ctx.answerCbQuery('No products to display.');
       await ctx.reply('No products to display.');
@@ -163,5 +171,3 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
     await ctx.reply('Sorry, something went wrong while loading products.');
   }
 }
-
-
