@@ -29,6 +29,7 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
     const userId = ctx.from.id.toString();
     let storeId: string;
     let productIndex: number;
+    let isNavigation = false;
 
     // Determine if it's an initial view or navigation
     if (callbackData.startsWith('view_products_')) {
@@ -95,6 +96,7 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
       productIndex = newIndex;
       userData.currentIndex = newIndex;
       userProductIndex.set(userId, userData);
+      isNavigation = true;
 
     } else if (callbackData.startsWith('add_to_cart_')) {
       const productId = callbackData.split('_')[3];
@@ -142,25 +144,50 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
       [Markup.button.callback('🔙 Back to Store Details', `store_${storeId}`)],
     ];
 
-    // Send photo with caption and buttons
-    if (currentProduct.image_url) {
-      await ctx.replyWithPhoto(
-        currentProduct.image_url,
-        {
+    // For navigation, edit the existing message; for initial view, send new message
+    if (isNavigation) {
+      // Edit existing message for navigation
+      if (currentProduct.image_url) {
+        // For images, we need to edit the media
+        await ctx.editMessageMedia({
+          type: 'photo',
+          media: currentProduct.image_url,
           caption: message,
-          parse_mode: 'Markdown',
+          parse_mode: 'Markdown'
+        }, {
           reply_markup: Markup.inlineKeyboard(buttons).reply_markup
-        }
-      );
+        });
+      } else {
+        // For text-only, edit the message text
+        await ctx.editMessageText(
+          message,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: Markup.inlineKeyboard(buttons).reply_markup
+          }
+        );
+      }
     } else {
-      // If no image, edit the message text as before
-      await ctx.editMessageText(
-        message,
-        {
-          parse_mode: 'Markdown',
-          reply_markup: Markup.inlineKeyboard(buttons).reply_markup
-        }
-      );
+      // Send new message for initial view
+      if (currentProduct.image_url) {
+        await ctx.replyWithPhoto(
+          currentProduct.image_url,
+          {
+            caption: message,
+            parse_mode: 'Markdown',
+            reply_markup: Markup.inlineKeyboard(buttons).reply_markup
+          }
+        );
+      } else {
+        // If no image, edit the message text as before
+        await ctx.editMessageText(
+          message,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: Markup.inlineKeyboard(buttons).reply_markup
+          }
+        );
+      }
     }
 
     await ctx.answerCbQuery();
@@ -171,3 +198,4 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
     await ctx.reply('Sorry, something went wrong while loading products.');
   }
 }
+
