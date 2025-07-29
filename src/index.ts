@@ -23,6 +23,7 @@ bot.start(startCommand);
 // Register action handlers (for inline keyboard callbacks)
 bot.action(/^store_/, storeDetailsAction);
 bot.action(/^view_products_/, viewProductsAction);
+bot.action('back_to_stores', startCommand); // Add this line
 
 // Error handling
 bot.catch((err, ctx) => {
@@ -66,4 +67,5 @@ startBot();
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
 
