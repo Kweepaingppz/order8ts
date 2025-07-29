@@ -1,17 +1,25 @@
 import { Context, Markup } from 'telegraf';
 import { supabase, escapeMarkdown } from '../../lib/supabaseClient';
 
-export async function storeDetailsAction(ctx: Context) {
+export async function storeDetailsAction(ctx: Context): Promise<void> {
   try {
     // Extract store ID from callback data
-    const callbackData = ctx.callbackQuery?.data;
+    const callbackQuery = ctx.callbackQuery;
+    if (!callbackQuery || !('data' in callbackQuery)) {
+      await ctx.reply('Invalid store selection.');
+      return;
+    }
+
+    const callbackData = callbackQuery.data;
     if (!callbackData) {
-      return ctx.reply('Invalid store selection.');
+      await ctx.reply('Invalid store selection.');
+      return;
     }
 
     const storeId = callbackData.split('_')[1];
     if (!storeId) {
-      return ctx.reply('Invalid store selection.');
+      await ctx.reply('Invalid store selection.');
+      return;
     }
 
     // Fetch store details
@@ -26,7 +34,8 @@ export async function storeDetailsAction(ctx: Context) {
     if (error || !store) {
       console.error('Error fetching store details:', error);
       await ctx.answerCbQuery('Store not found');
-      return ctx.reply('Sorry, I could not find details for this store.');
+      await ctx.reply('Sorry, I could not find details for this store.');
+      return;
     }
 
     // Format store details message
@@ -79,6 +88,7 @@ export async function storeDetailsAction(ctx: Context) {
   } catch (error) {
     console.error('Error in store details action:', error);
     await ctx.answerCbQuery('Error loading store details');
-    ctx.reply('Sorry, something went wrong while loading store details.');
+    await ctx.reply('Sorry, something went wrong while loading store details.');
   }
 }
+
