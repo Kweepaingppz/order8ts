@@ -54,8 +54,8 @@ export async function viewCartAction(ctx: Context): Promise<void> {
     if (ctx.callbackQuery && 'message' in ctx.callbackQuery && ctx.callbackQuery.message) {
       const originalMessage = ctx.callbackQuery.message;
       
-      if ('photo' in originalMessage && originalMessage.photo) {
-        // Original message is a photo, edit the caption
+      if ('caption' in originalMessage) {
+        // Original message has a caption (photo, video, audio, document), edit the caption
         await ctx.editMessageCaption(
           message,
           {
