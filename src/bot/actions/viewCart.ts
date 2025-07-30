@@ -50,13 +50,48 @@ export async function viewCartAction(ctx: Context): Promise<void> {
       [Markup.button.callback('🛍️ Continue Shopping', 'back_to_stores')],
     ];
 
-    await ctx.editMessageText(
-      message,
-      {
-        parse_mode: 'Markdown',
-        reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
+    // Check if the message being edited is a photo or text message
+    if (ctx.callbackQuery && 'message' in ctx.callbackQuery && ctx.callbackQuery.message) {
+      const originalMessage = ctx.callbackQuery.message;
+      
+      if ('photo' in originalMessage && originalMessage.photo) {
+        // Original message is a photo, edit the caption
+        await ctx.editMessageCaption(
+          message,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
+          }
+        );
+      } else if ('text' in originalMessage && originalMessage.text) {
+        // Original message is text, edit the text
+        await ctx.editMessageText(
+          message,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
+          }
+        );
+      } else {
+        // Fallback: send a new message if we can't determine the type
+        await ctx.reply(
+          message,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
+          }
+        );
       }
-    );
+    } else {
+      // Fallback: send a new message if callback query is not available
+      await ctx.reply(
+        message,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
+        }
+      );
+    }
 
     await ctx.answerCbQuery();
   } catch (error) {
