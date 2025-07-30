@@ -1,6 +1,17 @@
+// src/bot/actions/viewCart.ts
 import { Context, Markup } from 'telegraf';
 import { getUserCart, formatCartMessage, getCartTotal } from '../features/cart';
 import { escapeMarkdown, formatCurrency } from '../../lib/supabaseClient';
+
+// Define CartItem interface to match cart.ts
+interface CartItem {
+  product_id: string;
+  product_name: string;
+  price: number;
+  quantity: number;
+  store_id: string;
+  store_name: string;
+}
 
 export async function viewCartAction(ctx: Context): Promise<void> {
   try {
@@ -13,14 +24,14 @@ export async function viewCartAction(ctx: Context): Promise<void> {
     const userId = ctx.from.id.toString();
     const cart = await getUserCart(userId);
 
-    if (!cart || Object.keys(cart).length === 0) {
+    if (!cart || cart.length === 0) {
       await ctx.answerCbQuery();
       await ctx.editMessageText(
         'Your cart is empty! 🛒\n\nStart shopping by viewing products.',
         {
           parse_mode: 'Markdown',
           reply_markup: Markup.inlineKeyboard([
-            [Markup.button.callback('🛍️ View Products', 'view_products_initial')], // Assuming a generic view products action
+            [Markup.button.callback('🛍️ View Products', 'view_products_initial')],
             [Markup.button.callback('🔙 Back to Stores', 'back_to_stores')],
           ]).reply_markup,
         }
@@ -28,15 +39,15 @@ export async function viewCartAction(ctx: Context): Promise<void> {
       return;
     }
 
-    const cartMessage = formatCartMessage(cart);
-    const total = getCartTotal(cart);
+    const cartMessage = formatCartMessage(userId); // Fixed: Pass userId, not cart
+    const total = getCartTotal(userId); // Fixed: Pass userId, not cart
 
     let message = `*Your Shopping Cart* 🛒\n\n${cartMessage}\n*Total:* ${formatCurrency(total)}\n\n`;
 
     const buttons = [
       [Markup.button.callback('Checkout', 'checkout')],
       [Markup.button.callback('Clear Cart', 'clear_cart')],
-      [Markup.button.callback('🛍️ Continue Shopping', 'back_to_stores')], // Or a more specific action to go back to products
+      [Markup.button.callback('🛍️ Continue Shopping', 'back_to_stores')],
     ];
 
     await ctx.editMessageText(
@@ -54,5 +65,3 @@ export async function viewCartAction(ctx: Context): Promise<void> {
     await ctx.reply('Sorry, something went wrong while loading your cart.');
   }
 }
-
-
