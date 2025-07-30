@@ -5,6 +5,8 @@ import { startCommand } from './bot/commands/start';
 import { storeDetailsAction } from './bot/actions/storeDetails';
 import { viewProductsAction } from './bot/actions/viewProducts';
 import { viewCartAction } from './bot/actions/viewCart'; // Import viewCartAction
+import { checkoutAction, cancelCheckoutAction, handleCheckoutInput, handlePaymentMethod } from './bot/actions/checkoutAction';
+import { getUserSession } from './bot/features/userSession';
 
 // Load environment variables
 dotenv.config();
@@ -28,6 +30,24 @@ bot.action(/^navigate_product_/, viewProductsAction);
 bot.action(/^add_to_cart_/, viewProductsAction);
 bot.action('back_to_stores', startCommand);
 bot.action('view_cart', viewCartAction); // Add this line for View Cart
+bot.action('checkout', checkoutAction);
+bot.action('cancel_checkout', cancelCheckoutAction);
+bot.action('payment_kpay', (ctx) => handlePaymentMethod(ctx, 'kpay'));
+bot.action('payment_usdt', (ctx) => handlePaymentMethod(ctx, 'usdt'));
+bot.action('payment_cod', (ctx) => handlePaymentMethod(ctx, 'cod'));
+
+// Handle text messages during checkout flow
+bot.on('text', async (ctx) => {
+  if (!ctx.from) return;
+  
+  const userId = ctx.from.id.toString();
+  const session = getUserSession(userId);
+  
+  // Only handle text if user is in checkout flow
+  if (session && session.state !== 'idle') {
+    await handleCheckoutInput(ctx);
+  }
+});
 
 // Error handling
 bot.catch((err, ctx) => {
