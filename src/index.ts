@@ -4,6 +4,7 @@ import express from 'express';
 import { startCommand } from './bot/commands/start';
 import { storeDetailsAction } from './bot/actions/storeDetails';
 import { viewProductsAction } from './bot/actions/viewProducts';
+import { viewCartAction } from './bot/actions/viewCart'; // Import viewCartAction
 
 // Load environment variables
 dotenv.config();
@@ -23,9 +24,10 @@ bot.start(startCommand);
 // Register action handlers (for inline keyboard callbacks)
 bot.action(/^store_/, storeDetailsAction);
 bot.action(/^view_products_/, viewProductsAction);
-bot.action(/^navigate_product_/, viewProductsAction); // Add this line for Next/Previous
-bot.action(/^add_to_cart_/, viewProductsAction);     // Add this line for Add to Cart
+bot.action(/^navigate_product_/, viewProductsAction);
+bot.action(/^add_to_cart_/, viewProductsAction);
 bot.action('back_to_stores', startCommand);
+bot.action('view_cart', viewCartAction); // Add this line for View Cart
 
 // Error handling
 bot.catch((err, ctx) => {
