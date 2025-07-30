@@ -1,6 +1,7 @@
 import { Context, Markup } from 'telegraf';
 import { supabase, formatCurrency, escapeMarkdown } from '../../lib/supabaseClient';
 import { addToCart } from '../features/cart';
+import { storeDetailsAction } from './storeDetails';
 
 // In-memory storage for user's current product index in a store
 const userProductIndex: Map<string, { storeId: string, products: any[], currentIndex: number }> = new Map();
@@ -30,6 +31,13 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
     let storeId: string;
     let productIndex: number;
     let isNavigation = false;
+
+    // Handle "Back to Store Details" button
+    if (callbackData.startsWith('store_')) {
+      // Delegate to storeDetailsAction
+      await storeDetailsAction(ctx);
+      return;
+    }
 
     // Determine if it's an initial view or navigation
     if (callbackData.startsWith('view_products_')) {
@@ -141,6 +149,7 @@ export async function viewProductsAction(ctx: Context): Promise<void> {
         Markup.button.callback('➡️ Next', `navigate_product_next_${storeId}`),
       ],
       [Markup.button.callback('➕ Add to Cart', `add_to_cart_${currentProduct.id}`)],
+      [Markup.button.callback('🛒 View Cart', 'view_cart')],
       [Markup.button.callback('🔙 Back to Store Details', `store_${storeId}`)],
     ];
 
