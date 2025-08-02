@@ -16,6 +16,12 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 
 if (!BOT_TOKEN) {
   throw new Error('BOT_TOKEN is required in environment variables');
+}
+
+const bot = new Telegraf(BOT_TOKEN);
+
+async function startBot() {
+  try {
             // Create order in Supabase
             const { data: order, error: orderError } = await supabase
                 .from('orders')
@@ -70,11 +76,9 @@ if (!BOT_TOKEN) {
                     return;
                 }
             }
-    storeId: string; // UUID of the store
-    paymentMethod: 'kpay' | 'usdt' | 'cod'; // Payment method
+
             let orderSummary = `🎉 *Order Confirmed!*\n\n`;
             orderSummary += `📋 *Order ID:* \`${orderId}\`\n`;
-}
 
 // Register command handlers
 bot.start(startCommand);
@@ -137,3 +141,15 @@ bot.catch((err, ctx) => {
       });
     }
     
+  } catch (error) {
+    console.error('Error starting bot:', error);
+  }
+}
+
+startBot();
+
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
+
+
