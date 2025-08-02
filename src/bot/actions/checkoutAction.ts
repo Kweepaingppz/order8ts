@@ -42,15 +42,69 @@ export async function checkoutAction(ctx: Context): Promise<void> {
       `Bangkok 10110\n` +
       `Thailand`;
 
-    await ctx.editMessageText(
-      message,
-      {
-        parse_mode: 'Markdown',
-        reply_markup: Markup.inlineKeyboard([
-          [Markup.button.callback('❌ Cancel Checkout', 'cancel_checkout')]
-        ]).reply_markup
+    // Try to edit the message, fallback to reply if editing fails
+    try {
+      if (ctx.callbackQuery && 'message' in ctx.callbackQuery && ctx.callbackQuery.message) {
+        const originalMessage = ctx.callbackQuery.message;
+        
+        if ('text' in originalMessage && originalMessage.text) {
+          // Original message has text, use editMessageText
+          await ctx.editMessageText(
+            message,
+            {
+              parse_mode: 'Markdown',
+              reply_markup: Markup.inlineKeyboard([
+                [Markup.button.callback('❌ Cancel Checkout', 'cancel_checkout')]
+              ]).reply_markup
+            }
+          );
+        } else if ('caption' in originalMessage && originalMessage.caption) {
+          // Original message has caption, use editMessageCaption
+          await ctx.editMessageCaption(
+            message,
+            {
+              parse_mode: 'Markdown',
+              reply_markup: Markup.inlineKeyboard([
+                [Markup.button.callback('❌ Cancel Checkout', 'cancel_checkout')]
+              ]).reply_markup
+            }
+          );
+        } else {
+          // Fallback to reply if message type cannot be determined
+          await ctx.reply(
+            message,
+            {
+              parse_mode: 'Markdown',
+              reply_markup: Markup.inlineKeyboard([
+                [Markup.button.callback('❌ Cancel Checkout', 'cancel_checkout')]
+              ]).reply_markup
+            }
+          );
+        }
+      } else {
+        // No callback query message, use reply
+        await ctx.reply(
+          message,
+          {
+            parse_mode: 'Markdown',
+            reply_markup: Markup.inlineKeyboard([
+              [Markup.button.callback('❌ Cancel Checkout', 'cancel_checkout')]
+            ]).reply_markup
+          }
+        );
       }
-    );
+    } catch (editError) {
+      // If editing fails for any reason, fallback to reply
+      await ctx.reply(
+        message,
+        {
+          parse_mode: 'Markdown',
+          reply_markup: Markup.inlineKeyboard([
+            [Markup.button.callback('❌ Cancel Checkout', 'cancel_checkout')]
+          ]).reply_markup
+        }
+      );
+    }
 
     await ctx.answerCbQuery();
 
