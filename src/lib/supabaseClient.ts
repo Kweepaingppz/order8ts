@@ -20,7 +20,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 // Helper function to format currency
 export const formatCurrency = (amount: number): string => {
-  return `฿${amount.toFixed(2)}`;
+  return `$${amount.toFixed(2)}`;
 };
 
 // Helper function to escape markdown characters
