@@ -74,6 +74,7 @@ if (!BOT_TOKEN) {
     paymentMethod: 'kpay' | 'usdt' | 'cod'; // Payment method
             let orderSummary = `🎉 *Order Confirmed!*\n\n`;
             orderSummary += `📋 *Order ID:* \`${orderId}\`\n`;
+}
 
 // Register command handlers
 bot.start(startCommand);
