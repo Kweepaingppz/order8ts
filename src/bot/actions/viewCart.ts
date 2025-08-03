@@ -26,7 +26,9 @@ export async function viewCartAction(ctx: Context): Promise<void> {
 
     if (!cart || cart.length === 0) {
       await ctx.answerCbQuery();
-      await ctx.editMessageText(
+      
+      // Always send as text message for empty cart
+      await ctx.reply(
         'Your cart is empty! 🛒\n\nStart shopping by viewing products.',
         {
           parse_mode: 'Markdown',
@@ -39,9 +41,8 @@ export async function viewCartAction(ctx: Context): Promise<void> {
       return;
     }
 
-    const cartMessage = formatCartMessage(userId); // Fixed: Pass userId, not cart
-    const total = getCartTotal(userId); // Fixed: Pass userId, not cart
-
+    const cartMessage = formatCartMessage(userId);
+    const total = getCartTotal(userId);
     let message = `*Your Shopping Cart* 🛒\n\n${cartMessage}\n*Total:* ${formatCurrency(total)}\n\n`;
 
     const buttons = [
@@ -50,48 +51,14 @@ export async function viewCartAction(ctx: Context): Promise<void> {
       [Markup.button.callback('🛍️ Continue Shopping', 'back_to_stores')],
     ];
 
-    // Check if the message being edited is a photo or text message
-    if (ctx.callbackQuery && 'message' in ctx.callbackQuery && ctx.callbackQuery.message) {
-      const originalMessage = ctx.callbackQuery.message;
-      
-      if ('caption' in originalMessage) {
-        // Original message has a caption (photo, video, audio, document), edit the caption
-        await ctx.editMessageCaption(
-          message,
-          {
-            parse_mode: 'Markdown',
-            reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
-          }
-        );
-      } else if ('text' in originalMessage && originalMessage.text) {
-        // Original message is text, edit the text
-        await ctx.editMessageText(
-          message,
-          {
-            parse_mode: 'Markdown',
-            reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
-          }
-        );
-      } else {
-        // Fallback: send a new message if we can't determine the type
-        await ctx.reply(
-          message,
-          {
-            parse_mode: 'Markdown',
-            reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
-          }
-        );
+    // Always send cart as a text message (no images)
+    await ctx.reply(
+      message,
+      {
+        parse_mode: 'Markdown',
+        reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
       }
-    } else {
-      // Fallback: send a new message if callback query is not available
-      await ctx.reply(
-        message,
-        {
-          parse_mode: 'Markdown',
-          reply_markup: Markup.inlineKeyboard(buttons).reply_markup,
-        }
-      );
-    }
+    );
 
     await ctx.answerCbQuery();
   } catch (error) {
