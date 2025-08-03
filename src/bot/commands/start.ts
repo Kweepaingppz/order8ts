@@ -117,7 +117,7 @@ export async function showStoresWithPagination(ctx: Context, page: number = 0): 
     const totalPages = Math.ceil(totalStores / STORES_PER_PAGE);
     const currentPageDisplay = page + 1;
     
-    const message = `🏪 *Available Stores* (Page ${currentPageDisplay}/${totalPages})\n\nChoose a store to browse products:`;
+    const message = ` *Available Stores* (Page ${currentPageDisplay}/${totalPages})\n\nChoose a store to browse products:`;
 
     if (ctx.callbackQuery) {
       await ctx.editMessageText(message, {
