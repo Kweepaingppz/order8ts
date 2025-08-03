@@ -2,6 +2,8 @@ import { Context, Markup } from 'telegraf';
 import { supabase, escapeMarkdown } from '../../lib/supabaseClient';
 
 export async function storeDetailsAction(ctx: Context): Promise<void> {
+  let storeId: string | undefined;
+  
   try {
     // Extract store ID from callback data
     const callbackQuery = ctx.callbackQuery;
@@ -16,7 +18,7 @@ export async function storeDetailsAction(ctx: Context): Promise<void> {
       return;
     }
 
-    const storeId = callbackData.split('_')[1];
+    storeId = callbackData.split('_')[1];
     if (!storeId) {
       await ctx.reply('Invalid store selection.');
       return;
@@ -97,7 +99,7 @@ export async function storeDetailsAction(ctx: Context): Promise<void> {
     console.error('Error in store details action:', error);
     
     // If error is related to photo (invalid URL, etc.), try sending text only
-    if (error instanceof Error && error.message.includes('photo')) {
+    if (error instanceof Error && error.message.includes('photo') && storeId) {
       try {
         console.log('Photo error, falling back to text message');
         
