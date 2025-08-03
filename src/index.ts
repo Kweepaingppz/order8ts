@@ -232,4 +232,4 @@ process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
 // Export the pagination function for use in start command
-export { showStoresWithPagination };
+export { showStoresWithPagination }; 
