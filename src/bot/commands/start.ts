@@ -162,4 +162,4 @@ export async function handlePrevStores(ctx: Context): Promise<void> {
   
   await showStoresWithPagination(ctx, prevPage);
   await ctx.answerCbQuery?.();
-}
+} 
