@@ -73,7 +73,7 @@ export async function showStoresWithPagination(ctx: Context, page: number = 0): 
 
     // Add store buttons (2 per row for better layout)
     const storeButtons = stores.map(store =>
-      Markup.button.callback(`🏪 ${store.name}`, `store_${store.id}`)
+      Markup.button.callback(` ${store.name}`, `store_${store.id}`)
     );
 
     // Group store buttons in rows of 2
